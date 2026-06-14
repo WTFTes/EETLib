@@ -1,6 +1,6 @@
 ﻿using MongoDB.Driver;
 
-namespace EETReader.DB;
+namespace EETReader.DB.Mongo;
 
 public class MongoConnection(string uri, string databaseName)
 {
@@ -11,6 +11,8 @@ public class MongoConnection(string uri, string databaseName)
         if (Clients.TryGetValue(uri, out var client))
             return client;
         
+        ConventionHelper.Setup();
+        
         client = new MongoClient(uri);
         
         Clients.Add(uri, client);
@@ -18,7 +20,7 @@ public class MongoConnection(string uri, string databaseName)
         return client;
     }
 
-    private IMongoDatabase Database => GetConnection().GetDatabase(databaseName);
+    public IMongoDatabase Database => GetConnection().GetDatabase(databaseName);
 
     public IMongoCollection<T> GetCollection<T>(string collectionName) => Database.GetCollection<T>(collectionName);
 }

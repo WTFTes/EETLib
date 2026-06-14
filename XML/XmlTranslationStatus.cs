@@ -1,6 +1,6 @@
-﻿namespace EETReader;
+﻿namespace EETReader.XML;
 
-public enum TranslationStatus: int
+public enum XmlTranslationStatus: int
 {
     WaitingForValidation = 90,
     Ignored = -1,

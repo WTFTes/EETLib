@@ -1,25 +1,27 @@
 ﻿using System.Text;
 using System.Xml;
 
-namespace EETReader;
+namespace EETReader.XML;
 
 public class XmlDatabase
 {
     public string FilePath => _path;
     
-    private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<int, List<TranslationEntry>>>>> _nodes = new();
+    private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<int, List<XmlTranslationEntry>>>>> _nodes = new();
+
+    private Dictionary<string, List<XmlTranslationEntry>> _byOriginalTextStore = new();
 
     private string _path;
     private XmlDocument _xml;
 
-    public IEnumerable<TranslationEntry> Entries =>
+    public IEnumerable<XmlTranslationEntry> Entries =>
         _nodes.Values
             .SelectMany(byChamp => byChamp.Values)
             .SelectMany(byEdid => byEdid.Values)
             .SelectMany(byHash => byHash.Values)
             .SelectMany(nodeList => nodeList);
 
-    public IEnumerable<TranslationEntry> GetNodesByType(string groupName)
+    public IEnumerable<XmlTranslationEntry> GetNodesByType(string groupName)
     {
         if (!_nodes.TryGetValue(groupName, out var byFieldName))
             yield break;
@@ -51,10 +53,15 @@ public class XmlDatabase
                 _nodes[node.Group][node.FieldName][edid][node.Original.GetHashCode()] = new();
 
             _nodes[node.Group][node.FieldName][edid][node.Original.GetHashCode()].Add(node);
+
+            if (_byOriginalTextStore.TryGetValue(node.Original.Trim(), out var nodes))
+                nodes.Add(node);
+            else
+                _byOriginalTextStore[node.Original.Trim()] = [node];
         });
     }
 
-    public TranslationEntry? LookupCandidate(TranslationEntry other, bool compareIndex = false, bool compareId = false)
+    public XmlTranslationEntry? LookupCandidate(XmlTranslationEntry other, bool compareIndex = false, bool compareId = false)
     {
         if (!_nodes.TryGetValue(other.Group, out var byFieldName))
             return null;
@@ -83,9 +90,9 @@ public class XmlDatabase
         _xml.WriteTo(writer);
     }
 
-    public List<List<TranslationEntry>> TrySquash()
+    public List<List<XmlTranslationEntry>> TrySquash()
     {
-        List<List<TranslationEntry>> unsquashed = new();
+        List<List<XmlTranslationEntry>> unsquashed = new();
 
         foreach (var (_, byChamp) in _nodes)
         foreach (var (_, byEdid) in byChamp)
@@ -104,11 +111,16 @@ public class XmlDatabase
         return unsquashed;
     }
 
-    public IEnumerable<TranslationEntry> LookupByEdId(string edId) =>
+    public IEnumerable<XmlTranslationEntry> LookupByEdId(string edId) =>
         _nodes.Values
             .SelectMany(byChamp => byChamp.Values)
             .SelectMany(byEdid => byEdid.Where(kvp => kvp.Key == edId))
             .SelectMany(kvp => kvp.Value.SelectMany(byHash => byHash.Value));
     
-    public IEnumerable<TranslationEntry> Find(Func<TranslationEntry, bool> m) => Entries.Where(m);
+    public IEnumerable<XmlTranslationEntry> Find(Func<XmlTranslationEntry, bool> m) => Entries.Where(m);
+
+    public IList<XmlTranslationEntry> GetCandidates(string originalText)
+    {
+        return _byOriginalTextStore.TryGetValue(originalText.Trim(), out var nodes) ? nodes : [];
+    }
 }

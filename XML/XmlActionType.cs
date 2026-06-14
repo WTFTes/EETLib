@@ -1,4 +1,4 @@
-namespace EETReader;
+namespace EETReader.XML;
 
 public enum XmlActionType
 {

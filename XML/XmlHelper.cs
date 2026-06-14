@@ -1,13 +1,13 @@
 ﻿using System.Text;
 using System.Xml;
 
-namespace EETReader;
+namespace EETReader.XML;
 
 public static class XmlHelper
 {
-    public delegate XmlActionType TranslationEntryFuncCallback(TranslationEntry node);
+    public delegate XmlActionType TranslationEntryFuncCallback(XmlTranslationEntry node);
     
-    public delegate void TranslationEntryActionCallback(TranslationEntry node);
+    public delegate void TranslationEntryActionCallback(XmlTranslationEntry node);
 
     public static void ModifyXml(string path, string outPath, TranslationEntryFuncCallback translationEntryFuncCallback)
     {
@@ -47,12 +47,12 @@ public static class XmlHelper
 
         var documentElement = doc.ChildNodes[1]!;
 
-        List<TranslationEntry> nodes = new();
+        List<XmlTranslationEntry> nodes = new();
 
         List<XmlNode> toRemove = new();
         foreach (XmlNode translationNode in documentElement.ChildNodes)
         {
-            TranslationEntry transEntry = new()
+            XmlTranslationEntry transEntry = new()
             {
                 SourceTag = tag
             };
@@ -88,7 +88,10 @@ public static class XmlHelper
                         transEntry.Index = int.Parse(fieldNode.InnerText);
                         break;
                     case "STATUS":
-                        transEntry.Status = (TranslationStatus)int.Parse(fieldNode.InnerText);
+                        transEntry.Status = (XmlTranslationStatus)int.Parse(fieldNode.InnerText);
+                        break;
+                    case "COMMENTAIRE":
+                        transEntry.Comment = fieldNode.ChildNodes.Count == 0 ? null : fieldNode.InnerText;
                         break;
                 }
             }

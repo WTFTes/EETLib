@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace EETReader;
+namespace EETReader.XML;
 
-public class TranslationEntry
+public class XmlTranslationEntry
 {
     public string SourceTag { get; set; } = "";
     
@@ -13,10 +13,13 @@ public class TranslationEntry
     public string? FieldName { get; set; } // FNAM, RNAM, etc
     public string? Original { get; set; }
     public string? Translated { get; set; }
-    public string? Perso { get; set; } // comment?
-    public int Index { get; set; } // internal index
+    public string? Perso { get; set; } 
     
-    public TranslationStatus Status { get; set; }
+    public string? Comment { get; set; }
+    
+    public int Index { get; set; } // internal index, used in guild ranks
+    
+    public XmlTranslationStatus Status { get; set; }
 
     public Dictionary<string, XmlNode> FieldsSource = [];
 
@@ -31,6 +34,7 @@ public class TranslationEntry
         ["PERSO"] = nameof(Perso),
         ["INDEX"] = nameof(Index),
         ["STATUS"] = nameof(Status),
+        ["COMMENTAIRE"] = nameof(Comment),
     };
     
     public bool ApplyValuesBack()

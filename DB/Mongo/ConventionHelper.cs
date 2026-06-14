@@ -4,11 +4,11 @@ using MongoDB.Bson.Serialization.Conventions;
 
 namespace EETReader.DB;
 
-public static class ConvenctionHelper
+public static class ConventionHelper
 {
-    class MyConvenction : IMemberMapConvention
+    class MyConvention : IMemberMapConvention
     {
-        public string Name => nameof(MyConvenction);
+        public string Name => nameof(MyConvention);
 
         public void Apply(BsonMemberMap memberMap)
         {
@@ -26,13 +26,19 @@ public static class ConvenctionHelper
             return;
 
         var myConventions = new ConventionPack();
-        myConventions.Add(new MyConvenction());
+        myConventions.Add(new MyConvention());
         myConventions.Add(new IgnoreExtraElementsConvention(true));
 
         ConventionRegistry.Register(
             "My Custom Conventions",
             myConventions,
             t => true);
+
+        BsonClassMap.RegisterClassMap<TranslationEntry>(cm =>
+        {
+            cm.AutoMap();
+            cm.SetIdMember(null);
+        });
 
         _initialized = true;
     }
