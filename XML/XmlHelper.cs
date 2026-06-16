@@ -93,6 +93,14 @@ public static class XmlHelper
                     case "COMMENTAIRE":
                         transEntry.Comment = fieldNode.ChildNodes.Count == 0 ? null : fieldNode.InnerText;
                         break;
+                    case "ICON":
+                        transEntry.Icon = fieldNode.ChildNodes.Count == 0 ? null : fieldNode.InnerText;
+                        break;
+                    case "IDSTEXTE":
+                        transEntry.IdsTexte = fieldNode.ChildNodes.Count == 0 ? null : fieldNode.InnerText;
+                        break;
+                    default:
+                        break;
                 }
             }
             

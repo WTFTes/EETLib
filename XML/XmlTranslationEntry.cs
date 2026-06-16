@@ -17,6 +17,10 @@ public class XmlTranslationEntry
     
     public string? Comment { get; set; }
     
+    public string? Icon { get; set; }
+    
+    public string? IdsTexte { get; set; }
+    
     public int Index { get; set; } // internal index, used in guild ranks
     
     public XmlTranslationStatus Status { get; set; }
@@ -35,6 +39,8 @@ public class XmlTranslationEntry
         ["INDEX"] = nameof(Index),
         ["STATUS"] = nameof(Status),
         ["COMMENTAIRE"] = nameof(Comment),
+        ["ICON"] = nameof(Icon),
+        ["IDSTEXTE"] = nameof(IdsTexte),
     };
     
     public bool ApplyValuesBack()
