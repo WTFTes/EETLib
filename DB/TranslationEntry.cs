@@ -1,6 +1,6 @@
-﻿using EETReader.DB.Mongo;
+﻿using EETLib.DB.Mongo;
 
-namespace EETReader.DB;
+namespace EETLib.DB;
 
 public class TranslationEntry
 {
@@ -14,4 +14,9 @@ public class TranslationEntry
     public string TranslatedText = "";
     public string Comment = "";
     public string Status { get; set; } = TranslationStatus.None;
+    
+    public override string ToString()
+    {
+        return $"{OriginalText} -> {TranslatedText}";
+    }
 }

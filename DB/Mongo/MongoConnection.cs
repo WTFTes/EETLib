@@ -1,6 +1,6 @@
 ﻿using MongoDB.Driver;
 
-namespace EETReader.DB.Mongo;
+namespace EETLib.DB.Mongo;
 
 public class MongoConnection(string uri, string databaseName)
 {

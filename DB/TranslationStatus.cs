@@ -1,4 +1,4 @@
-﻿namespace EETReader.DB;
+﻿namespace EETLib.DB;
 
 public static class TranslationStatus
 {

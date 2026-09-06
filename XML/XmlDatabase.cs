@@ -1,28 +1,49 @@
-﻿using System.Text;
+using System.Text;
 using System.Xml;
 
-namespace EETReader.XML;
+namespace EETLib.XML;
 
 public class XmlDatabase
 {
     public string FilePath => _path;
-    
-    private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<int, List<XmlTranslationEntry>>>>> _nodes = new();
 
+    private Dictionary<string, Dictionary<string, Dictionary<string, Dictionary<int, List<XmlTranslationEntry>>>>> _nodes = new();
     private Dictionary<string, List<XmlTranslationEntry>> _byOriginalTextStore = new();
 
     private string _path;
     private XmlDocument _xml;
+    private bool _loaded;
 
-    public IEnumerable<XmlTranslationEntry> Entries =>
-        _nodes.Values
-            .SelectMany(byChamp => byChamp.Values)
-            .SelectMany(byEdid => byEdid.Values)
-            .SelectMany(byHash => byHash.Values)
-            .SelectMany(nodeList => nodeList);
+    public XmlDatabase() { }
+
+    public XmlDatabase(string path)
+    {
+        _path = path;
+    }
+
+    private void EnsureLoaded()
+    {
+        if (_loaded || string.IsNullOrEmpty(_path))
+            return;
+        Load(_path);
+    }
+
+    public IEnumerable<XmlTranslationEntry> Entries
+    {
+        get
+        {
+            EnsureLoaded();
+            return _nodes.Values
+                .SelectMany(byChamp => byChamp.Values)
+                .SelectMany(byEdid => byEdid.Values)
+                .SelectMany(byHash => byHash.Values)
+                .SelectMany(nodeList => nodeList);
+        }
+    }
 
     public IEnumerable<XmlTranslationEntry> GetNodesByType(string groupName)
     {
+        EnsureLoaded();
         if (!_nodes.TryGetValue(groupName, out var byFieldName))
             yield break;
 
@@ -36,6 +57,8 @@ public class XmlDatabase
     public void Load(string path)
     {
         _path = path;
+        _nodes = new();
+        _byOriginalTextStore = new();
 
         _xml = XmlHelper.TraverseAndModifyXml(path, node =>
         {
@@ -59,10 +82,13 @@ public class XmlDatabase
             else
                 _byOriginalTextStore[node.Original.Trim()] = [node];
         });
+
+        _loaded = true;
     }
 
     public XmlTranslationEntry? LookupCandidate(XmlTranslationEntry other, bool compareIndex = false, bool compareId = false)
     {
+        EnsureLoaded();
         if (!_nodes.TryGetValue(other.Group, out var byFieldName))
             return null;
 
@@ -72,7 +98,7 @@ public class XmlDatabase
         var edid = other.EdId ?? "";
         if (!byEdid.TryGetValue(edid, out var byHash))
             return null;
-        
+
         if (!byHash.TryGetValue(other.Original.GetHashCode(), out var nodeList))
             return null;
 
@@ -81,6 +107,7 @@ public class XmlDatabase
 
     public void Save(string path)
     {
+        EnsureLoaded();
         using var writer = XmlWriter.Create(path, new()
         {
             Encoding = Encoding.UTF8,
@@ -92,6 +119,7 @@ public class XmlDatabase
 
     public List<List<XmlTranslationEntry>> TrySquash()
     {
+        EnsureLoaded();
         List<List<XmlTranslationEntry>> unsquashed = new();
 
         foreach (var (_, byChamp) in _nodes)
@@ -111,16 +139,20 @@ public class XmlDatabase
         return unsquashed;
     }
 
-    public IEnumerable<XmlTranslationEntry> LookupByEdId(string edId) =>
-        _nodes.Values
+    public IEnumerable<XmlTranslationEntry> LookupByEdId(string edId)
+    {
+        EnsureLoaded();
+        return _nodes.Values
             .SelectMany(byChamp => byChamp.Values)
             .SelectMany(byEdid => byEdid.Where(kvp => kvp.Key == edId))
             .SelectMany(kvp => kvp.Value.SelectMany(byHash => byHash.Value));
-    
+    }
+
     public IEnumerable<XmlTranslationEntry> Find(Func<XmlTranslationEntry, bool> m) => Entries.Where(m);
 
     public IList<XmlTranslationEntry> GetCandidates(string originalText)
     {
+        EnsureLoaded();
         return _byOriginalTextStore.TryGetValue(originalText.Trim(), out var nodes) ? nodes : [];
     }
 }

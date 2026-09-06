@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Xml;
 
-namespace EETReader.XML;
+namespace EETLib.XML;
 
 public static class XmlHelper
 {

@@ -2,7 +2,7 @@
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
 
-namespace EETReader.DB;
+namespace EETLib.DB.Mongo;
 
 public static class ConventionHelper
 {

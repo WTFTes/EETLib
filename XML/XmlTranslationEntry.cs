@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace EETReader.XML;
+namespace EETLib.XML;
 
 public class XmlTranslationEntry
 {
@@ -22,6 +22,10 @@ public class XmlTranslationEntry
     public string? IdsTexte { get; set; }
     
     public int Index { get; set; } // internal index, used in guild ranks
+
+    public bool HasTranslation => !string.IsNullOrWhiteSpace(Translated) && Translated.Trim() != Original?.Trim();
+    
+    public bool IsDeprecated => Original?.Contains("<Deprecated>", StringComparison.InvariantCultureIgnoreCase) == true;
     
     public XmlTranslationStatus Status { get; set; }
 
@@ -59,7 +63,7 @@ public class XmlTranslationEntry
             if (val == null)
                 node.RemoveAll();
             else
-                node.InnerText = val.ToString();
+                node.InnerText = val is Enum ? Convert.ToInt32(val).ToString() : val.ToString();
 
             // TODO: convert &#x4;
             if (Regex.IsMatch(node.InnerText, @"[\u0001-\u0004]"))
